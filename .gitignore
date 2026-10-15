@@ -10,11 +10,13 @@
 /.vscode
 /.zed
 
-build
+/build
 composer.lock
-docs
-vendor
-coverage
+/docs
+/vendor
+/coverage
+.phpunit.result.cache
+/phpunit.xml
 
 # ----------------------- local shit ----------------------- #
 /remember.txt

@@ -14,33 +14,40 @@ class Laravel2faServiceProvider extends ServiceProvider
         /*
          * Optional methods to load your package assets
          */
-        // $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'laravel-2fa');
-        // $this->loadViewsFrom(__DIR__.'/../resources/views', 'laravel-2fa');
-        // $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-        // $this->loadRoutesFrom(__DIR__.'/routes.php');
+        $this->loadViewsFrom([$this->publishedViewsPath(), __DIR__ . '/../resources/views'], 'laravel-2fa');
+        $this->loadRoutesFrom(__DIR__ . '/routes.php');
+
+        $this->app['router']->aliasMiddleware('laravel-2fa.enforced', Http\Middleware\EnsureTwoFactorEnabled::class);
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../config/config.php' => config_path('laravel-2fa.php'),
+                __DIR__ . '/../config/config.php' => config_path('laravel-2fa.php'),
             ], 'config');
 
             // Publishing the views.
-            /*$this->publishes([
-                __DIR__.'/../resources/views' => resource_path('views/vendor/laravel-2fa'),
-            ], 'views');*/
+            $this->publishes([
+                __DIR__ . '/../resources/views' => $this->publishedViewsPath(),
+            ], 'views');
 
-            // Publishing assets.
-            /*$this->publishes([
-                __DIR__.'/../resources/assets' => public_path('vendor/laravel-2fa'),
-            ], 'assets');*/
+            // Publishing the migration.
+            $this->publishes([
+                __DIR__ . '/../database/migrations/add_two_factor_columns.php.stub' => database_path('migrations/' . date('Y_m_d_His') . '_add_two_factor_columns.php'),
+            ], 'migrations');
 
-            // Publishing the translation files.
-            /*$this->publishes([
-                __DIR__.'/../resources/lang' => resource_path('lang/vendor/laravel-2fa'),
-            ], 'lang');*/
+            // Publishing the Doctrine xml-mapping fields.
+            $this->publishes([
+                __DIR__ . '/../database/doctrine/two-factor-fields.xml' => database_path('doctrine/laravel-2fa-fields.xml'),
+            ], 'doctrine');
+
+            // add a logging channel
+            if (config('laravel-2fa.logging', null) && config('laravel-2fa.save_logs', null)) {
+                $this->app->make('config')->set('logging.channels.laravel-2fa', config('laravel-2fa.logging'));
+            }
 
             // Registering package commands.
-            // $this->commands([]);
+            $this->commands([
+                Console\Commands\DoctrineMappings::class,
+            ]);
         }
     }
 
@@ -49,12 +56,18 @@ class Laravel2faServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        // Automatically apply the package configuration
-        $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'laravel-2fa');
+        // This will allow your users to define only the options they actually
+        // want to override in the published copy of the configuration
+        $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'laravel-2fa');
 
         // Register the main class to use with the facade
         $this->app->singleton('laravel-2fa', function () {
             return new Laravel2fa;
         });
+    }
+
+    private function publishedViewsPath(): string
+    {
+        return resource_path('views/' . trim((string)config('laravel-2fa.views_path', 'laravel-2fa'), '/'));
     }
 }
