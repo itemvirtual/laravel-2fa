@@ -26,9 +26,27 @@ trait TwoFactorAuthentication
         return $this->two_factor_enabled === true;
     }
 
+    public function setTwoFactorEnabled(bool $enabled): void
+    {
+        $this->forceFill(['two_factor_enabled' => $enabled])->save();
+    }
+
     public function hasTwoFactorConfirmed(): bool
     {
-        return $this->two_factor_secret !== null && $this->two_factor_confirmed_at !== null;
+        if ($this->two_factor_confirmed_at === null) {
+            return false;
+        }
+
+        return $this->getTwoFactorMethod() === 'email' || $this->two_factor_secret !== null;
+    }
+
+    public function getTwoFactorMethod(): ?string
+    {
+        if ($this->two_factor_method) {
+            return $this->two_factor_method;
+        }
+
+        return $this->two_factor_secret !== null ? 'totp' : null;
     }
 
     public function getTwoFactorSecret(): ?string
@@ -41,6 +59,11 @@ trait TwoFactorAuthentication
         return (string)($this->getAttribute('email') ?: $this->getAuthIdentifier());
     }
 
+    public function getTwoFactorEmail(): ?string
+    {
+        return $this->getAttribute('email') ?: null;
+    }
+
     public function getTwoFactorLastTimestamp(): ?int
     {
         return $this->two_factor_last_timestamp;
@@ -51,9 +74,10 @@ trait TwoFactorAuthentication
         $this->forceFill(['two_factor_last_timestamp' => $timestamp])->save();
     }
 
-    public function startTwoFactorSetup(string $secret): void
+    public function startTwoFactorSetup(?string $secret, string $method = 'totp'): void
     {
         $this->forceFill([
+            'two_factor_method' => $method,
             'two_factor_secret' => $secret,
             'two_factor_recovery_codes' => null,
             'two_factor_last_timestamp' => null,
@@ -104,6 +128,7 @@ trait TwoFactorAuthentication
     public function resetTwoFactor(): void
     {
         $this->forceFill([
+            'two_factor_method' => null,
             'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
             'two_factor_last_timestamp' => null,

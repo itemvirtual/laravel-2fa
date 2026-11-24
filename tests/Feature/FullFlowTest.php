@@ -107,13 +107,14 @@ class FullFlowTest extends TestCase
         $this->assertAuthenticatedAs($user, 'web');
     }
 
-    public function test_flagged_user_without_configuration_is_sent_to_setup()
+    public function test_flagged_user_without_configuration_logs_in_directly()
     {
-        $this->withPassword($this->createUser(true, false));
+        $user = $this->withPassword($this->createUser(true, false));
 
         $this->post('/login', ['email' => 'jane@example.com', 'password' => 'secret'])->assertRedirect('/dashboard');
-        $this->get('/dashboard')->assertRedirect('/two-factor/setup');
-        $this->get('/two-factor/setup')->assertOk();
+        $this->get('/dashboard')->assertOk();
+
+        $this->assertAuthenticatedAs($user, 'web');
     }
 
     public function test_logging_out_one_guard_keeps_the_other()

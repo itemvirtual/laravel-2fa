@@ -15,9 +15,8 @@ class Laravel2faServiceProvider extends ServiceProvider
          * Optional methods to load your package assets
          */
         $this->loadViewsFrom([$this->publishedViewsPath(), __DIR__ . '/../resources/views'], 'laravel-2fa');
+        $this->loadTranslationsFrom(__DIR__ . '/../lang', 'laravel-2fa');
         $this->loadRoutesFrom(__DIR__ . '/routes.php');
-
-        $this->app['router']->aliasMiddleware('laravel-2fa.enforced', Http\Middleware\EnsureTwoFactorEnabled::class);
 
         if ($this->app->runningInConsole()) {
             $this->publishes([

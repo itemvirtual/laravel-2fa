@@ -16,7 +16,6 @@ class ViewsTest extends TestCase
         foreach (['web', 'customer'] as $guard) {
             config()->set('laravel-2fa.guards.' . $guard . '.views', [
                 'challenge' => 'laravel-2fa::challenge',
-                'setup' => 'laravel-2fa::setup',
             ]);
         }
     }
@@ -47,54 +46,46 @@ class ViewsTest extends TestCase
 
         $this->get('/two-factor/challenge')
             ->assertSee('data-mode="recovery"', false)
-            ->assertSee(__('The provided two factor recovery code was invalid.'));
+            ->assertSee(trans('laravel-2fa::laravel-2fa.invalid_recovery_code'));
     }
 
-    public function test_setup_view_when_pending()
+    public function test_email_challenge_view()
     {
+        config()->set('laravel-2fa.guards.web.methods', ['totp', 'email']);
         $user = $this->createUser(true, false);
+        $user->startTwoFactorSetup(null, 'email');
+        $user->confirmTwoFactor(['code-1']);
 
-        $response = $this->actingAs($user, 'web')->get('/two-factor/setup')->assertOk();
-
-        $response->assertSee('<svg', false)
-            ->assertDontSee('<?xml', false)
-            ->assertSee($user->fresh()->getTwoFactorSecret())
-            ->assertSee('action="' . url('/two-factor/setup') . '"', false);
-    }
-
-    public function test_setup_view_when_confirmed_shows_codes_once()
-    {
-        $user = $this->createUser(true, false);
-        $this->actingAs($user, 'web')->get('/two-factor/setup');
-        $this->post('/two-factor/setup', ['code' => $this->currentCode($user)]);
-        $codes = $user->fresh()->getRecoveryCodes();
-
-        $this->get('/two-factor/setup')
-            ->assertSee(__('Two factor authentication has been enabled.'))
-            ->assertSee($codes[0])
-            ->assertSee('name="_method" value="DELETE"', false)
-            ->assertSee("window.confirm('Are you sure you want to reset two factor authentication?')", false)
-            ->assertSee('href="' . url('/dashboard') . '"', false);
-
-        $this->get('/two-factor/setup')->assertDontSee($codes[0]);
+        $this->withSession(['laravel-2fa.web.pending' => ['id' => $user->id, 'remember' => false]])
+            ->get('/two-factor/challenge')
+            ->assertSee('j***@example.com')
+            ->assertSee('action="' . url('/two-factor/challenge/resend') . '"', false);
     }
 
     public function test_views_follow_the_javascript_conventions()
     {
-        foreach (File::files(__DIR__ . '/../../resources/views') as $file) {
-            $contents = File::get($file->getPathname());
+        foreach (File::allFiles(__DIR__ . '/../../resources/views') as $file) {
+            preg_match_all('/<script>(.*?)<\/script>/s', File::get($file->getPathname()), $scripts);
 
-            $this->assertStringNotContainsString('=>', $contents, $file->getFilename());
-            $this->assertStringNotContainsString('`', $contents, $file->getFilename());
+            foreach ($scripts[1] as $script) {
+                $this->assertStringNotContainsString('=>', $script, $file->getFilename());
+                $this->assertStringNotContainsString('`', $script, $file->getFilename());
+            }
         }
     }
 
     public function test_views_are_configurable_per_guard()
     {
-        config()->set('laravel-2fa.guards.customer.views.setup', 'testing::setup');
-        $customer = $this->createCustomer(true, false);
+        config()->set('laravel-2fa.guards.customer.views.challenge', 'testing::challenge');
+        $customer = $this->createCustomer(true);
+        $user = $this->createUser(true);
 
-        $this->actingAs($customer, 'customer')->get('/customer/two-factor/setup')->assertSee('setup:customer:pending');
-        $this->actingAs($this->createUser(true, false), 'web')->get('/two-factor/setup')->assertSee('<svg', false);
+        $this->withSession(['laravel-2fa.customer.pending' => ['id' => $customer->id, 'remember' => false]])
+            ->get('/customer/two-factor/challenge')
+            ->assertSee('challenge:customer:');
+
+        $this->withSession(['laravel-2fa.web.pending' => ['id' => $user->id, 'remember' => false]])
+            ->get('/two-factor/challenge')
+            ->assertSee('name="code"', false);
     }
 }

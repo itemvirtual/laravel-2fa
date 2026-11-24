@@ -18,6 +18,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Email method
+    |--------------------------------------------------------------------------
+    |
+    | expires: minutes before an email code expires
+    | length: number of digits of the email code
+    | max_attempts: wrong attempts before the email code is discarded
+    |
+    */
+    'email' => [
+        'expires' => (int)env('LARAVEL_2FA_EMAIL_EXPIRES', 10),
+        'length' => (int)env('LARAVEL_2FA_EMAIL_LENGTH', 6),
+        'max_attempts' => (int)env('LARAVEL_2FA_EMAIL_MAX_ATTEMPTS', 5),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Guards
     |--------------------------------------------------------------------------
     |
@@ -27,17 +43,20 @@ return [
     |
     | Only users with two_factor_enabled = true use 2FA
     |
+    | methods: methods the user can choose in the profile form (totp, email)
+    |
     */
     'guards' => [
 
         'web' => [
+            'methods' => ['totp', 'email'],
             'prefix' => 'two-factor',
             'middleware' => ['web'],
             'login_route' => 'login',
             'redirect' => '/dashboard',
             'views' => [
                 'challenge' => 'laravel-2fa::challenge',
-                'setup' => 'laravel-2fa::setup',
+                'fields' => 'laravel-2fa::fields',
             ],
         ],
 

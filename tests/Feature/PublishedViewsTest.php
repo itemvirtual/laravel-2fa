@@ -28,7 +28,14 @@ class PublishedViewsTest extends TestCase
 
     private function renderChallenge(): string
     {
-        return view('laravel-2fa::challenge', ['guard' => 'web', 'action' => '/', 'errors' => new ViewErrorBag()])->render();
+        return view('laravel-2fa::challenge', [
+            'guard' => 'web',
+            'action' => '/',
+            'method' => 'totp',
+            'email' => '',
+            'resendAction' => '/',
+            'errors' => new ViewErrorBag(),
+        ])->render();
     }
 
     public function test_views_are_published_to_the_configured_directory()

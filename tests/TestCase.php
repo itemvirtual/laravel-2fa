@@ -41,16 +41,15 @@ abstract class TestCase extends Orchestra
             'redirect' => '/customer/dashboard',
             'views' => [
                 'challenge' => 'laravel-2fa::challenge',
-                'setup' => 'laravel-2fa::setup',
             ],
         ]);
 
         $app['view']->addNamespace('testing', __DIR__ . '/Fixtures/views');
 
         foreach (['web', 'customer'] as $guard) {
+            $app['config']->set('laravel-2fa.guards.' . $guard . '.methods', ['totp']);
             $app['config']->set('laravel-2fa.guards.' . $guard . '.views', [
                 'challenge' => 'testing::challenge',
-                'setup' => 'testing::setup',
             ]);
         }
     }
@@ -68,11 +67,11 @@ abstract class TestCase extends Orchestra
 
             $router->get('/dashboard', function () {
                 return 'dashboard';
-            })->middleware(['auth:web', 'laravel-2fa.enforced:web']);
+            })->middleware('auth:web');
 
             $router->get('/customer/dashboard', function () {
                 return 'customer-dashboard';
-            })->middleware(['auth:customer', 'laravel-2fa.enforced:customer']);
+            })->middleware('auth:customer');
         });
     }
 

@@ -36,7 +36,6 @@ class ConfigurationTest extends TestCase
             }
 
             $this->assertNotEmpty(Laravel2fa::guardConfig($guard, 'views.challenge'));
-            $this->assertNotEmpty(Laravel2fa::guardConfig($guard, 'views.setup'));
         }
     }
 

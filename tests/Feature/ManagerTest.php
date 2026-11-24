@@ -47,23 +47,19 @@ class ManagerTest extends TestCase
         $this->assertFalse(Laravel2fa::hasGuard('web'));
     }
 
-    public function test_requires_challenge_and_setup()
+    public function test_requires_challenge()
     {
         $off = $this->createUser();
         $pending = $this->createCustomer(true, false);
 
         $this->assertFalse(Laravel2fa::requiresChallenge('web', $off));
-        $this->assertFalse(Laravel2fa::requiresSetup('web', $off));
         $this->assertFalse(Laravel2fa::requiresChallenge('customer', $pending));
-        $this->assertTrue(Laravel2fa::requiresSetup('customer', $pending));
 
         $this->confirmTwoFactor($pending);
         $this->assertTrue(Laravel2fa::requiresChallenge('customer', $pending->fresh()));
-        $this->assertFalse(Laravel2fa::requiresSetup('customer', $pending->fresh()));
 
         $this->removeGuard('customer');
         $this->assertFalse(Laravel2fa::requiresChallenge('customer', $pending->fresh()));
-        $this->assertFalse(Laravel2fa::requiresSetup('customer', $pending->fresh()));
     }
 
     public function test_login_without_two_factor_passes_through()

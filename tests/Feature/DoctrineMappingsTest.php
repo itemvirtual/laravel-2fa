@@ -34,7 +34,7 @@ class DoctrineMappingsTest extends TestCase
         foreach (['Users', 'Customers'] as $entity) {
             $columns = $this->columns($this->path . '/' . $entity . '.dcm.xml');
 
-            foreach (['two_factor_enabled', 'two_factor_secret', 'two_factor_recovery_codes', 'two_factor_last_timestamp', 'two_factor_confirmed_at'] as $column) {
+            foreach (['two_factor_enabled', 'two_factor_method', 'two_factor_secret', 'two_factor_recovery_codes', 'two_factor_last_timestamp', 'two_factor_confirmed_at'] as $column) {
                 $this->assertSame(1, count(array_keys($columns, $column)), $entity . ' ' . $column);
             }
         }
@@ -52,6 +52,7 @@ class DoctrineMappingsTest extends TestCase
             '                <option name="default">0</option>',
             '            </options>',
             '        </field>',
+            '        <field name="twoFactorMethod" type="string" column="two_factor_method" length="10" nullable="true"/>',
             '        <field name="twoFactorSecret" type="text" column="two_factor_secret" nullable="true"/>',
             '        <field name="twoFactorRecoveryCodes" type="text" column="two_factor_recovery_codes" nullable="true"/>',
             '        <field name="twoFactorLastTimestamp" type="bigint" column="two_factor_last_timestamp" nullable="true">',
@@ -85,7 +86,7 @@ class DoctrineMappingsTest extends TestCase
         $original = File::get($this->path . '/Users.dcm.xml');
 
         $this->artisan('laravel-2fa:doctrine-mappings', ['--dry-run' => true])
-            ->expectsOutputToContain('users: would add two_factor_enabled, two_factor_secret')
+            ->expectsOutputToContain('users: would add two_factor_enabled, two_factor_method, two_factor_secret')
             ->assertExitCode(0);
 
         $this->assertSame($original, File::get($this->path . '/Users.dcm.xml'));

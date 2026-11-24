@@ -3,6 +3,7 @@
                 <option name="default">0</option>
             </options>
         </field>
+        <field name="twoFactorMethod" type="string" column="two_factor_method" length="10" nullable="true"/>
         <field name="twoFactorSecret" type="text" column="two_factor_secret" nullable="true"/>
         <field name="twoFactorRecoveryCodes" type="text" column="two_factor_recovery_codes" nullable="true"/>
         <field name="twoFactorLastTimestamp" type="bigint" column="two_factor_last_timestamp" nullable="true">

@@ -11,6 +11,7 @@ class MigrationTest extends TestCase
 {
     private array $columns = [
         'two_factor_enabled',
+        'two_factor_method',
         'two_factor_secret',
         'two_factor_recovery_codes',
         'two_factor_last_timestamp',

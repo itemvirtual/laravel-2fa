@@ -9,6 +9,7 @@ return new class extends Migration
 {
     private array $columns = [
         'two_factor_enabled',
+        'two_factor_method',
         'two_factor_secret',
         'two_factor_recovery_codes',
         'two_factor_last_timestamp',
@@ -34,6 +35,7 @@ return new class extends Migration
                 foreach ($missing as $column) {
                     match ($column) {
                         'two_factor_enabled' => $blueprint->boolean($column)->default(false),
+                        'two_factor_method' => $blueprint->string($column, 10)->nullable(),
                         'two_factor_secret' => $blueprint->text($column)->nullable(),
                         'two_factor_recovery_codes' => $blueprint->text($column)->nullable(),
                         'two_factor_last_timestamp' => $blueprint->unsignedBigInteger($column)->nullable(),
