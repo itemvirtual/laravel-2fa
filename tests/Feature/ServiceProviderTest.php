@@ -32,14 +32,13 @@ class ServiceProviderTest extends TestCase
         $config = ServiceProvider::pathsToPublish(Laravel2faServiceProvider::class, 'config');
         $views = ServiceProvider::pathsToPublish(Laravel2faServiceProvider::class, 'views');
         $migrations = ServiceProvider::pathsToPublish(Laravel2faServiceProvider::class, 'migrations');
-        $doctrine = ServiceProvider::pathsToPublish(Laravel2faServiceProvider::class, 'doctrine');
 
         $this->assertContains(config_path('laravel-2fa.php'), $config);
         $this->assertContains(resource_path('views/laravel-2fa'), $views);
         $this->assertCount(1, $migrations);
-        $this->assertContains(database_path('doctrine/laravel-2fa-fields.xml'), $doctrine);
+        $this->assertEmpty(ServiceProvider::pathsToPublish(Laravel2faServiceProvider::class, 'doctrine'));
 
-        foreach (array_merge(array_keys($config), array_keys($views), array_keys($migrations), array_keys($doctrine)) as $source) {
+        foreach (array_merge(array_keys($config), array_keys($views), array_keys($migrations)) as $source) {
             $this->assertFileExists($source);
         }
     }

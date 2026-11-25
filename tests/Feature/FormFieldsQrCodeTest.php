@@ -70,6 +70,43 @@ class FormFieldsQrCodeTest extends TestCase
         $this->assertStringNotContainsString('<svg', $html);
     }
 
+    public function test_authenticator_apps_are_listed_next_to_the_qr_code()
+    {
+        config()->set('laravel-2fa.authenticator_apps', ['Test Authenticator' => 'https://example.com/test-app']);
+
+        $html = $this->currentUserFields('totp');
+
+        $this->assertStringContainsString(trans('laravel-2fa::laravel-2fa.fields_totp_apps'), $html);
+        $this->assertStringContainsString('<a class="l2fa-link" href="https://example.com/test-app" target="_blank" rel="noopener">Test Authenticator</a>', $html);
+    }
+
+    public function test_authenticator_apps_are_hidden_when_the_list_is_empty()
+    {
+        config()->set('laravel-2fa.authenticator_apps', []);
+
+        $html = $this->currentUserFields('totp');
+
+        $this->assertStringContainsString('<svg', $html);
+        $this->assertStringNotContainsString(trans('laravel-2fa::laravel-2fa.fields_totp_apps'), $html);
+        $this->assertStringNotContainsString('l2fa-apps', $html);
+    }
+
+    public function test_authenticator_apps_are_hidden_for_the_email_method()
+    {
+        $html = $this->currentUserFields('email');
+
+        $this->assertStringNotContainsString(trans('laravel-2fa::laravel-2fa.fields_totp_apps'), $html);
+        $this->assertStringNotContainsString('l2fa-apps', $html);
+    }
+
+    private function currentUserFields(string $method): string
+    {
+        $user = $this->enable($this->createUser(), $method);
+        $this->actingAs($user, 'web');
+
+        return Laravel2fa::formFields('web', $user)->render();
+    }
+
     public function test_qr_code_matches_the_stored_secret()
     {
         $user = $this->enable($this->createUser(), 'totp');

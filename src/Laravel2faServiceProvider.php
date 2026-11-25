@@ -33,11 +33,6 @@ class Laravel2faServiceProvider extends ServiceProvider
                 __DIR__ . '/../database/migrations/add_two_factor_columns.php.stub' => database_path('migrations/' . date('Y_m_d_His') . '_add_two_factor_columns.php'),
             ], 'migrations');
 
-            // Publishing the Doctrine xml-mapping fields.
-            $this->publishes([
-                __DIR__ . '/../database/doctrine/two-factor-fields.xml' => database_path('doctrine/laravel-2fa-fields.xml'),
-            ], 'doctrine');
-
             // add a logging channel
             if (config('laravel-2fa.logging', null) && config('laravel-2fa.save_logs', null)) {
                 $this->app->make('config')->set('logging.channels.laravel-2fa', config('laravel-2fa.logging'));

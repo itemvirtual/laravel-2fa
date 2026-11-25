@@ -44,15 +44,16 @@ The service provider and the `Laravel2fa` facade are registered through package 
 ```bash
 # Configuration file: config/laravel-2fa.php
 php artisan vendor:publish --provider="Itemvirtual\Laravel2fa\Laravel2faServiceProvider" --tag=config
+```
 
+```bash
 # Views: resources/views/laravel-2fa (see views_path)
 php artisan vendor:publish --provider="Itemvirtual\Laravel2fa\Laravel2faServiceProvider" --tag=views
+```
 
+```bash
 # Migration: database/migrations/{date}_add_two_factor_columns.php
 php artisan vendor:publish --provider="Itemvirtual\Laravel2fa\Laravel2faServiceProvider" --tag=migrations
-
-# Doctrine fields snippet: database/doctrine/laravel-2fa-fields.xml
-php artisan vendor:publish --provider="Itemvirtual\Laravel2fa\Laravel2faServiceProvider" --tag=doctrine
 ```
 
 ## Configuration
@@ -70,17 +71,18 @@ php artisan vendor:publish --provider="Itemvirtual\Laravel2fa\Laravel2faServiceP
 
 ### Reference
 
-| Key                 | Description                                                                          |
-|---------------------|--------------------------------------------------------------------------------------|
-| `issuer`            | Name shown in the authenticator app                                                  |
-| `window`            | Accepted drift, in 30 second periods                                                 |
-| `recovery_codes`    | Number of recovery codes                                                             |
-| `email`             | Email method options: `expires`, `length`, `max_attempts`                            |
-| `guards`            | One entry per auth guard, see below                                                  |
-| `views_path`        | Directory inside `resources/views` where views are published (default `laravel-2fa`) |
-| `xml_mappings_path` | Doctrine xml-mappings directory used by `laravel-2fa:doctrine-mappings`              |
-| `save_logs`         | Log the changes made by `laravel-2fa:doctrine-mappings`                              |
-| `logging`           | Log channel used when `save_logs` is enabled                                         |
+| Key                  | Description                                                                          |
+|----------------------|--------------------------------------------------------------------------------------|
+| `issuer`             | Name shown in the authenticator app                                                  |
+| `window`             | Accepted drift, in 30 second periods                                                 |
+| `recovery_codes`     | Number of recovery codes                                                             |
+| `email`              | Email method options: `expires`, `length`, `max_attempts`                            |
+| `authenticator_apps` | Apps suggested next to the QR code (name => download URL); empty array hides them    |
+| `guards`             | One entry per auth guard, see below                                                  |
+| `views_path`         | Directory inside `resources/views` where views are published (default `laravel-2fa`) |
+| `xml_mappings_path`  | Doctrine xml-mappings directory used by `laravel-2fa:doctrine-mappings`              |
+| `save_logs`          | Log the changes made by `laravel-2fa:doctrine-mappings`                              |
+| `logging`            | Log channel used when `save_logs` is enabled                                         |
 
 Options of each guard (`guards.{name}`):
 
@@ -182,11 +184,10 @@ php artisan doctrine:update
 - Before writing anything it checks that the path exists and that every guard table has a mapping; otherwise it
   exits with code 1 and no file is modified. Mappings of other tables are ignored
 
-To add the fields by hand, publish the snippet (`--tag=doctrine`) and paste it inside the `<entity>` element of each
-guard mapping:
+To add the fields by hand, paste them inside the `<entity>` element of each guard mapping:
 
+<!-- @formatter:off -->
 ```xml
-
 <field name="twoFactorEnabled" type="boolean" column="two_factor_enabled" nullable="false">
     <options>
         <option name="default">0</option>
@@ -196,12 +197,13 @@ guard mapping:
 <field name="twoFactorSecret" type="text" column="two_factor_secret" nullable="true"/>
 <field name="twoFactorRecoveryCodes" type="text" column="two_factor_recovery_codes" nullable="true"/>
 <field name="twoFactorLastTimestamp" type="bigint" column="two_factor_last_timestamp" nullable="true">
-<options>
-    <option name="unsigned"/>
-</options>
+    <options>
+        <option name="unsigned">true</option>
+    </options>
 </field>
 <field name="twoFactorConfirmedAt" type="datetime" column="two_factor_confirmed_at" nullable="true"/>
 ```
+<!-- @formatter:on -->
 
 ## Model setup
 
@@ -274,11 +276,11 @@ Render the fields inside the form with `formFields()`:
 </form>
 ```
 
-| Field                         | Shown                       | Description                             |
-|-------------------------------|-----------------------------|-----------------------------------------|
-| `two_factor_enabled`          | always                      | Checkbox; not sent when unchecked       |
-| `two_factor_method`           | always                      | Methods available to the user           |
-| `two_factor_regenerate_codes` | when 2FA is enabled         | Checkbox to generate new recovery codes |
+| Field                         | Shown               | Description                             |
+|-------------------------------|---------------------|-----------------------------------------|
+| `two_factor_enabled`          | always              | Checkbox; not sent when unchecked       |
+| `two_factor_method`           | always              | Methods available to the user           |
+| `two_factor_regenerate_codes` | when 2FA is enabled | Checkbox to generate new recovery codes |
 
 The fields keep the submitted values with `old()` after a validation error, including an unchecked checkbox. The new
 recovery codes are shown only once, the next time the fields are rendered.
@@ -288,7 +290,7 @@ unchecks it and when the fields are not in the form. If the form can also edit o
 `updateSettings()` only when editing the authenticated user, otherwise saving another user disables their 2FA:
 
 ```blade
-@if (Auth::guard('web')->user()->is($user))
+@if(Auth::guard('web')->user()->is($user))
     {{ Laravel2fa::formFields('web', $user) }}
 @endif
 ```
@@ -457,17 +459,17 @@ Errors are returned in `code` or `recovery_code`.
 
 Variables available in the fields view:
 
-| Variable         | Description                                                  |
-|------------------|--------------------------------------------------------------|
-| `$guard`         | Guard name                                                   |
-| `$enabled`       | Whether 2FA is enabled                                       |
-| `$confirmed`     | Whether the method is ready                                  |
-| `$method`        | `totp`, `email` or `null`                                    |
-| `$methods`       | Methods available to the user                                |
-| `$recoveryCodes` | New recovery codes, only right after they are regenerated    |
-| `$downloadUrl`   | Download URL of the codes, `null` when editing another user  |
-| `$qrCode`        | QR code SVG with `totp`, `null` when editing another user    |
-| `$secret`        | Setup key with `totp`, `null` when editing another user      |
+| Variable         | Description                                                 |
+|------------------|-------------------------------------------------------------|
+| `$guard`         | Guard name                                                  |
+| `$enabled`       | Whether 2FA is enabled                                      |
+| `$confirmed`     | Whether the method is ready                                 |
+| `$method`        | `totp`, `email` or `null`                                   |
+| `$methods`       | Methods available to the user                               |
+| `$recoveryCodes` | New recovery codes, only right after they are regenerated   |
+| `$downloadUrl`   | Download URL of the codes, `null` when editing another user |
+| `$qrCode`        | QR code SVG with `totp`, `null` when editing another user   |
+| `$secret`        | Setup key with `totp`, `null` when editing another user     |
 
 ### Styling the fields (Bootstrap 5)
 
@@ -496,7 +498,18 @@ your own markup. Example for a Bootstrap 5 form; keep the field names (`two_fact
     </div>
 </div>
 
-@if ($qrCode)
+@if($qrCode)
+    @if(config('laravel-2fa.authenticator_apps'))
+        <div class="border-top pt-3 mt-3">
+            <p class="small mb-2">{{ trans('laravel-2fa::laravel-2fa.fields_totp_apps') }}</p>
+            <ul class="list-inline small mb-0">
+                @foreach (config('laravel-2fa.authenticator_apps') as $appName => $appUrl)
+                    <li class="list-inline-item"><a href="{{ $appUrl }}" target="_blank" rel="noopener">{{ $appName }}</a></li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="d-flex flex-wrap align-items-center gap-3 border-top pt-3 mt-3">
         <div class="bg-white p-2 border rounded">{!! $qrCode !!}</div>
         <div>
@@ -506,20 +519,20 @@ your own markup. Example for a Bootstrap 5 form; keep the field names (`two_fact
     </div>
 @endif
 
-@if ($confirmed)
+@if($confirmed)
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 border-top pt-3 mt-3">
         <div class="form-check mb-0">
             <input class="form-check-input" type="checkbox" id="l2fa-regenerate-{{ $guard }}" name="two_factor_regenerate_codes" value="1">
             <label class="form-check-label" for="l2fa-regenerate-{{ $guard }}">{{ trans('laravel-2fa::laravel-2fa.generate_new_recovery_codes') }}</label>
         </div>
 
-        @if ($downloadUrl)
+        @if($downloadUrl)
             <a class="btn btn-sm btn-outline-secondary" href="{{ $downloadUrl }}">{{ trans('laravel-2fa::laravel-2fa.download_recovery_codes') }}</a>
         @endif
     </div>
 @endif
 
-@if (!empty($recoveryCodes))
+@if(!empty($recoveryCodes))
     <div class="alert alert-info mt-3 mb-0">
         <p class="small mb-2">{{ trans('laravel-2fa::laravel-2fa.store_recovery_codes') }}</p>
         <ul class="list-unstyled row row-cols-2 row-cols-md-4 g-1 font-monospace small mb-0">
@@ -533,8 +546,7 @@ your own markup. Example for a Bootstrap 5 form; keep the field names (`two_fact
 
 ## Translations
 
-All texts use `trans('laravel-2fa::laravel-2fa.{key}')`. The package ships English (`en`), Spanish (`es`) and Catalan
-(`ca`) in `lang/{locale}/laravel-2fa.php`. To override or add a language, create
+All texts use `trans('laravel-2fa::laravel-2fa.{key}')`. The package ships English (`en`), Spanish (`es`) and Catalan (`ca`) in `lang/{locale}/laravel-2fa.php`. To override or add a language, create
 `lang/vendor/laravel-2fa/{locale}/laravel-2fa.php` in the project with the keys you want to change.
 
 ## Security notes

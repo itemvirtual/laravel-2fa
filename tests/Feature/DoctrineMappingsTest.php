@@ -57,7 +57,7 @@ class DoctrineMappingsTest extends TestCase
             '        <field name="twoFactorRecoveryCodes" type="text" column="two_factor_recovery_codes" nullable="true"/>',
             '        <field name="twoFactorLastTimestamp" type="bigint" column="two_factor_last_timestamp" nullable="true">',
             '            <options>',
-            '                <option name="unsigned"/>',
+            '                <option name="unsigned">true</option>',
             '            </options>',
             '        </field>',
             '        <field name="twoFactorConfirmedAt" type="datetime" column="two_factor_confirmed_at" nullable="true"/>',

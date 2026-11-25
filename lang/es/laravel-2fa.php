@@ -30,6 +30,7 @@ return [
     'enable_two_factor' => 'Activar la autenticación en dos pasos',
     'generate_new_recovery_codes' => 'Generar nuevos códigos de recuperación',
     'download_recovery_codes' => 'Descargar códigos de recuperación',
+    'fields_totp_apps' => 'Instala una aplicación de autenticación en tu móvil, por ejemplo:',
     'fields_totp_text' => 'Escanea este código QR con tu aplicación de autenticación, o introduce la clave de configuración.',
 
     // Mail

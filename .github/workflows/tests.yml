@@ -35,13 +35,13 @@ jobs:
           extensions: mbstring, pdo, pdo_sqlite, sqlite3
           coverage: none
 
-      - name: Allow Laravel 9 despite security advisories
-        if: matrix.laravel == '9.*'
+      - name: Allow Laravel versions with security advisories
         run: composer config policy.advisories.block false
 
       - name: Install dependencies
         run: |
-          composer require "illuminate/support:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
+          composer require "illuminate/support:${{ matrix.laravel }}" --no-interaction --no-update
+          composer require --dev "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
           composer update --prefer-dist --no-interaction --with-all-dependencies
 
       - name: Run tests

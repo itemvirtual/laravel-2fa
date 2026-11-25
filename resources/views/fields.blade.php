@@ -14,6 +14,14 @@
     </div>
 
     @if ($qrCode)
+        @if (config('laravel-2fa.authenticator_apps'))
+            <p class="l2fa-text">{{ trans('laravel-2fa::laravel-2fa.fields_totp_apps') }}</p>
+            <ul class="l2fa-apps">
+                @foreach (config('laravel-2fa.authenticator_apps') as $appName => $appUrl)
+                    <li><a class="l2fa-link" href="{{ $appUrl }}" target="_blank" rel="noopener">{{ $appName }}</a></li>
+                @endforeach
+            </ul>
+        @endif
         <p class="l2fa-text">{{ trans('laravel-2fa::laravel-2fa.fields_totp_text') }}</p>
         <div class="l2fa-qr">{!! $qrCode !!}</div>
         <p class="l2fa-secret">{{ $secret }}</p>

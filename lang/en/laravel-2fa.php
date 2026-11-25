@@ -30,6 +30,7 @@ return [
     'enable_two_factor' => 'Enable two factor authentication',
     'generate_new_recovery_codes' => 'Generate new recovery codes',
     'download_recovery_codes' => 'Download recovery codes',
+    'fields_totp_apps' => 'Install an authenticator application on your phone, for example:',
     'fields_totp_text' => 'Scan this QR code with your authenticator application, or enter the setup key.',
 
     // Mail

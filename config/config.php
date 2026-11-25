@@ -34,6 +34,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Authenticator apps
+    |--------------------------------------------------------------------------
+    |
+    | Apps suggested next to the QR code in the profile form.
+    | Key: app name, value: download URL. Empty array hides the list
+    |
+    */
+    'authenticator_apps' => [
+        'Google Authenticator' => 'https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2',
+        'Microsoft Authenticator' => 'https://www.microsoft.com/security/mobile-authenticator-app',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Guards
     |--------------------------------------------------------------------------
     |
